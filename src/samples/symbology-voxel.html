@@ -1,0 +1,145 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>
+      Based on: VoxelLayer Discrete Variable | Sample Code | ArcGIS Maps SDK for JavaScript 4.26 | ArcGIS Developers
+    </title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.26/"></script>
+
+    <script>
+      require([
+        "esri/Basemap",
+        "esri/Map",
+        "esri/views/SceneView",
+        "esri/layers/VectorTileLayer",
+        "esri/layers/VoxelLayer",
+        "esri/widgets/Expand",
+        "esri/widgets/Legend",
+        "esri/widgets/Fullscreen",
+        "esri/widgets/Slice"
+      ], (
+        Basemap,
+        Map,
+        SceneView,
+        VectorTileLayer,
+        VoxelLayer,
+        Expand,
+        Legend,
+        Fullscreen,
+        Slice
+      ) => {
+        let isolate = false;
+        let exaggerate = false;
+
+        // Create basemap with NL tile layer
+        const basemap = new Basemap({
+          baseLayers: [new VectorTileLayer({
+            portalItem: {
+              id: "38c4cfd9b72346c988be5fff1668ea79"
+            }
+          })]
+        });
+
+        const voxelLayer = new VoxelLayer({
+          title: "Soil data",
+          url: "https://tiles.arcgis.com/tiles/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Soil_data_in_southeast_of_Netherlands_WSL1/SceneServer"
+        });
+
+        // Create Map and View
+        const map = new Map({ basemap, layers: [voxelLayer] });
+
+        const view = new SceneView({
+          camera: {
+            position: {
+              spatialReference: { wkid: 28992 },
+              x: 74126.47075023784,
+              y: 429578.1431914791,
+              z: 4183.395848763803
+            },
+            heading: 321.73752612563675,
+            tilt: 72.94845519235668
+          },
+          container: "viewDiv",
+          environment: {
+            lighting: {
+              date: new Date("2023-07-01T12:00:00.000Z")
+            }
+          },
+          map: map,
+          qualityProfile: "high",
+          viewingMode: "local"
+        });
+
+        view.popup.defaultPopupTemplateEnabled = true;
+
+        const legendExpand = new Expand({
+          view: view,
+          content: new Legend({
+            view: view,
+            style: {
+              type: "card",
+              layout: "side-by-side",
+            },
+          }),
+          group: "bottom-right",
+          expanded: false,
+        });
+        view.ui.add(legendExpand, "bottom-right");
+
+        const fullscreen = new Fullscreen({
+          view: view,
+        });
+        view.ui.add(fullscreen, "bottom-left");
+
+        // - - - - - - - - - - - - - - - -
+        // Reveal.js helpers
+        // - - - - - - - - - - - - - - - -
+
+        function onFragment(elementId, doSomething) {
+          const run = () => {
+            const currentId = getCurrentFragmentId();
+            //console.log(elementId + " " + currentId);
+            if (currentId === elementId) {
+              doSomething();
+            }
+          };
+
+          parent.Reveal.addEventListener("fragmenthidden", run);
+          parent.Reveal.addEventListener("fragmentshown", run);
+          run();
+        }
+
+        function getCurrentSlide() {
+          //console.log("getCurrentSlide");
+          return parent.Reveal.getCurrentSlide();
+        }
+
+        function getCurrentFragment() {
+          //console.log("getCurrentFragment");
+          return getCurrentSlide().querySelector(".current-fragment") ?? null;
+        }
+        function getCurrentFragmentId() {
+          //console.log("getCurrentFragmentId");
+          return getCurrentFragment()?.getAttribute("data-fragment-id") ?? null;
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
