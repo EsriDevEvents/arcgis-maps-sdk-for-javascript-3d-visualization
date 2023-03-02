@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <title>ArcGIS Maps SDK for JavaScript: 3D Visualization</title>
+
+  <link rel="stylesheet" href="./reveal.js/dist/reset.css" />
+  <link rel="stylesheet" href="./reveal.js/dist/reveal.css" />
+  <link rel="stylesheet" href="./reveal.js/dist/theme/black.css" />
+  <link rel="stylesheet" href="./resources/main.css" />
+
+  <!-- Override the Reveal theme variables: -->
+  <!-- https://github.com/hakimel/reveal.js/blob/master/cs
+s/theme/template/exposer.scss -->
+  <style type="text/css">
+    :root {
+      /* Color from slides */
+      --r-background-color: #000;
+
+      /* Main text color */
+      --r-main-color: #fff;
+
+      /* Arial font is recommended */
+      --r-heading-font: Arial, Helvetica Neue, Helvetica, sans-serif;
+      --r-main-font: Arial, Helvetica Neue, Helvetica, sans-serif;
+
+      /* For consistency with the template: */
+      --r-heading-font-weight: normal;
+      --r-heading-text-transform: none;
+      --r-heading-text-shadow: none;
+
+      /* Section subheader color per theme */
+      --r-section-subhead-color: #eaff46;
+    }
+
+    .slidetitle {
+      font-size: 48px !important;
+      margin-bottom: 0.4em !important;
+    }
+
+    .slidetitle-sub, h3 {
+      font-size: 36px !important;
+      margin-top: 0 !important;
+      margin-bottom: 0.2em !important;
+    }
+
+    .snippet-title {
+      font-size: 28px;
+    }
+
+    .footnote {
+      text-align: right;
+      margin-top: 8px !important;
+      font-size: 13px;
+      opacity: 80%;
+    }
+
+    .iframe-tm {
+      margin-top: 60px;
+    }
+
+    .title-lm {
+      margin-left: 150px;
+    }
+
+    .transparent {
+      opacity: 50%;
+    }
+
+    ul {
+      font-size: 32px;
+      line-height: 48px;
+      list-style: none !important;
+    }
+
+    ul li::before {
+      content: "\2022";
+      color: var(--r-section-subhead-color);
+      font-weight: bold;
+      display: inline-block;
+      width: 1em;
+      margin-left: -1em;
+    }
+
+    ul.sublist li::before {
+      content: "-";
+      font-weight: normal;
+    }
+
+    .li-margin-top {
+      margin-top: 25px;
+    }
+
+    code.smaller-snippet {
+      font-size: 14px;
+      line-height: 16px;
+    }
+  </style>
+
+  <!-- Theme used for syntax highlighted code -->
+  <link rel="stylesheet" href="./reveal.js/plugin/highlight/monokai.css" />
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <!-- TITLE SLIDE: -->
+      <section data-background="./reveal.js/img/2023/dev/01.png" data-background-size="contain">
+        <h1 style="text-align: right; font-size: 60px; margin-top: 35%">
+          ArcGIS Maps SDK for JavaScript:<br />
+          3D Visualization
+        </h1>
+        <p style="
+              text-align: right;
+              font-size: 30px;
+              color: var(--r-section-subhead-color);
+            ">
+          Gianluca Miele, Tobias Mansfield-Williams
+        </p>
+        <p style="text-align: right; font-size: 30px">
+          Slides:
+          <!-- to be revisited, presentation should be made available on gitHub, plus QR code -->
+          <a href="https://esridevevents.github.io/arcgis-js-api-for-javascript-3d-visualization-2023/"><code>https://esridevevents.github.io/arcgis-js-api-for-javascript-3d-visualization-2023/</code></a>
+        </p>
+      </section>
+
+      <!--------- AGENDA -------->
+      <section data-background="./reveal.js/img/2023/dev/06.png">
+        <div class="title-lm">
+          <h2 style="text-align: left; margin-bottom: 10px">Agenda</h2>
+          <div style="text-align: left; margin-top: 20px; color: white">
+            <li class="li-margin-top">Setting up a 3D application</li>
+            <li class="li-margin-top">Types and sources of data</li>
+            <li class="li-margin-top">Layer Symbology: 2D & 3D</li>
+            <li class="li-margin-top">Demos</li>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1. Core concepts: TITLE -------->
+      <section data-background="./reveal.js/img/2023/dev/06.png">
+        <div class="title-lm">
+          <h2 style="text-align: left; margin-bottom: 10px">Core concepts</h2>
+          <p style="text-align: left; margin-top: 0; color: var(--r-section-subhead-color)">
+            Getting started with 3D
+          </p>
+        </div>
+      </section>
+
+      <!--------- 1.1 Core concepts: Setting up a 3D application: HTML -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Setting up a 3D application</h2>
+        <p class="slidetitle-sub">HTML</p>
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <pre><code class="lang-ts smaller-snippet" data-line-numbers="1-15,32-37|17-18|22-24|26-29" data-trim>
+                    &lt;html&gt;
+                    &lt;head&gt;
+                      &lt;meta charset=&quot;utf-8&quot; /&gt;
+                      &lt;meta name=&quot;viewport&quot; content=&quot;initial-scale=1,maximum-scale=1,user-scalable=no&quot; /&gt;
+                      &lt;title&gt; &lt;/title&gt;
+                      &lt;style&gt;
+                        html,
+                        body,
+                        #viewDiv {
+                          padding: 0;
+                          margin: 0;
+                          height: 100%;
+                          width: 100%;
+                        }
+                      &lt;/style&gt;
+
+                      &lt;link rel=&quot;stylesheet&quot; href=&quot;https://js.arcgis.com/4.26/esri/themes/light/main.css&quot; /&gt;
+                      &lt;script src=&quot;https://js.arcgis.com/4.26/&quot;&gt;&lt;/script&gt;
+
+                      &lt;script&gt;
+                        require([&quot;esri/Map&quot;, &quot;esri/views/SceneView&quot;], (Map, SceneView) =&gt; {
+                          const map = new Map({
+                            basemap: &quot;topo-vector&quot;,
+                          });
+
+                          const view = new SceneView({
+                            container: &quot;viewDiv&quot;,
+                            map: map,
+                          });
+                        });
+                      &lt;/script&gt;
+                    &lt;/head&gt;
+
+                    &lt;body&gt;
+                      &lt;div id=&quot;viewDiv&quot;&gt;&lt;/div&gt;
+                    &lt;/body&gt;
+                  &lt;/html&gt;
+
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/basic-global.html"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.1 Core concepts: Setting up a 3D application: BASEMAP app -------->
+
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Setting up a 3D application</h2>
+        <p class="slidetitle-sub">Basemap</p>
+        <iframe class="r-stretch" data-src="./src/samples/basic-global-basemap.html"></iframe>
+      </section>
+
+      <!--------- 1.1 Core concepts: Setting up a 3D application: ELEVATION alps -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Setting up a 3D application</h2>
+        <p class="slidetitle-sub">Elevation</p>
+
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet fragment" data-fragment-id="fragment-add-elevation">
+              <!--button class="play swap" id="add-elevation"></button-->
+              <pre><code class="lang-ts" data-line-numbers="3" data-trim>
+
+                          const map = new Map({
+                              basemap: &quot;satellite&quot;,
+                              ground: &quot;world-elevation&quot;,
+                          });
+
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/basic-global-elevation.html"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.1 Core concepts: Setting up a 3D application: ELEVATION sea -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Setting up a 3D application</h2>
+        <p class="slidetitle-sub">Elevation</p>
+
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <pre><code class="lang-ts" data-line-numbers="3" data-trim>
+
+                          const map = new Map({
+                              basemap: &quot;oceans&quot;,
+                              ground: &quot;world-topobathymetry&quot;,
+                          });
+
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/basic-global-bathy.html"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.1 Core concepts: Setting up a 3D application: LOCAL world view -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Setting up a 3D application</h2>
+        <p class="slidetitle-sub">Global and Local scenes</p>
+
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet fragment" data-fragment-id="fragment-global-to-local">
+              <pre>
+                      <code class="lang-ts" data-line-numbers="3|4" data-trim>
+                            const view = new SceneView({
+                                container: &quot;viewDiv&quot;,
+                                viewingMode: &quot;local&quot;,
+                                spatialReference: { wkid: 54099 },
+                                map: map,
+                            });
+                      </code>
+                    </pre>
+            </div>
+          </div>
+          <div class="right-column">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/basic-local-world.html"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.1 Core concepts: Setting up a 3D application: LOCAL Redlands building -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Setting up a 3D application</h2>
+        <p class="slidetitle-sub">Clipping - local scenes</p>
+
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <button class="play" id="local-clipping"></button>
+              <pre><code class="lang-ts" data-line-numbers="14|1-10,15" data-trim>
+                            const clippingExtent = {
+                                spatialReference: {
+                                    latestWkid: 3857,
+                                    wkid: 102100,
+                                },
+                                xmin: -13045241,
+                                ymin: 4036811,
+                                xmax: -13045119,
+                                ymax: 4036890,
+                            };
+                            const view = new SceneView({
+                                container: &quot;viewDiv&quot;,
+                                viewingMode: &quot;local&quot;,
+                                clippingArea: clippingExtent,
+                                map: map,
+                            });
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/basic-local.html"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.2 Core concepts: Types and sources of Data : TITLE -------->
+      <section data-background="./reveal.js/img/2023/dev/06.png">
+        <div class="title-lm">
+          <h2 style="text-align: left; margin-bottom: 10px">Data</h2>
+          <p style="text-align: left; margin-top: 0; color: var(--r-section-subhead-color)">
+            Types and sources of data
+          </p>
+        </div>
+      </section>
+
+      <!--------- 1.2 Core concepts: Types of Data : Data types -------->
+
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <div class="two-columns">
+          <div class="left-column" style="gap: 10">
+            <h2 class="slidetitle">Data types</h2>
+            <ul>
+              <li class="fragment">
+                <span style="color: var(--r-section-subhead-color)">Feature Layer</span>
+                <ul class="sublist">
+                  <li>Points</li>
+                  <li>Lines</li>
+                  <li>Polygons</li>
+                </ul>
+              </li>
+              <li class="fragment"> Tiles (raster, vector), Elevation</li>
+              <li class="fragment"> Maps, Imagery</li>
+              <li class="fragment">
+                <span style="color: var(--r-section-subhead-color)">Scene Layer Data (i3s open format)</span>
+                <ul class="sublist">
+                  <li>3D Object</li>
+                  <li>Building (BIM)</li>
+                  <li>Integrated Mesh</li>
+                  <li>Point Cloud</li>
+                  <li>Voxel layer</li>
+                  <li>Point</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <div style="padding-top: 100px" class="right-column fragment">
+            <img src="./src/images/scene-features-scenelayers-turanga.png" width="800px" />
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.2 Core concepts: Sources of Data : Living atlas -------->
+
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png" data-transition="fade-out">
+        <h2 class="slidetitle">Sources of data</h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <h3 style="color: var(--r-section-subhead-color)">ArcGIS Online</h3>
+            <ul>
+              <li>Living Atlas
+                <ul class="sublist">
+                  <li>worldwide data</li>
+                  <li>curated content</li>
+                  <li>from Esri, Esri Partners, and the GIS community</li>
+                </ul>
+              </li>
+              <p></p>
+              <li>Own data | Your organization's data</li>
+            </ul>
+            <div class="fragment">
+              <p></p>
+              <h3 span style="color: var(--r-section-subhead-color)">ArcGIS Enterprise</h3>
+              <ul>
+                <li>As above...</li>
+                <li>+ on-premise</li>
+              </ul>
+            </div>
+            <div class="fragment">
+              <p></p>
+              <h3 span style="color: var(--r-section-subhead-color)">ArcGIS Developers</h3>
+            </div>
+          </div>
+          <div class="right-column">
+            <img src="./src/images/data-livingatlas.png" width="800px" />
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.2 Core concepts: Sources of Data : Upload -------->
+
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Sources of data</h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <!--<h3 style="color: var(--r-section-subhead-color)">ArcGIS Online<br/>ArcGIS Enterprise</h3>-->
+            <h3 style="color: var(--r-section-subhead-color)">Own data</h3>
+                <ul class="sublist">
+                  <li>Upload</li>
+                  <li>Publish</li>
+                  <li>Import</li>
+                  <li>Create hosted layer (e.g. Feature Service)</li>
+                </ul>
+          </div>
+          <div class="right-column">
+            <div class="r-stack">
+              <img class="fragment fade-out" data-fragment-index="0" src="./src/images/data-upload.png" width="720px" />
+              <img class="fragment" data-fragment-index="0" src="./src/images/arcgis-developers-create-hosted-layer.png" width="800px" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.2 Core concepts: Sources of Data : Edit -------->
+
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Sources of data</h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <h3 style="color: var(--r-section-subhead-color)">Feature Services</h3>
+                <ul class="sublist">
+                  <li>Edit existing data</li>
+                  <li>Add new data</li>
+                </ul>
+          </div>
+          <div class="right-column">
+            <div class="r-stack">
+              <img id="data-editor" src="./src/images/data-editor.png" width="800px" />
+              <img class="fragment" id="data-editor-sketch" src="./src/images/data-editor-sketch.png" width="600px" />
+            </div>
+            <p class="footnote">
+              See more in public samples:
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/widgets-editor-3d/"
+                target="_blank">Edit features in 3D with the Editor widget</a>
+              and
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/sketch-3d/" target="_blank">Sketch in
+                3D</a>
+            </p>
+          </div>
+        </div>
+      </section>
+      <!--------- 1.2 Core concepts: Sources of Data : other open sources -------->
+
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Sources of data</h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <h3>Other data sources <br />
+              in formats such as:
+            </h3>
+            <ul>
+              <!--<li class="transparent">
+                ArcGIS Online
+                <ul class="sublist">
+                  <li>Living Atlas – worldwide data</li>
+                  <li>Upload your own</li>
+                  <li>Create your own data</li>
+                </ul>
+              </li>-->
+                <ul class="sublist">
+                  <li>GeoJSON</li>
+                  <li>WFS</li>
+                  <li>CSV</li>
+                  <li>OGC features</li>
+                </ul>
+            </ul>
+          </div>
+          <div class="right-column">
+            <img src="./src/images/data-open.png" width="800px" />
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.2 Core concepts: Sources of Data : Living atlas ADD LAYER -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png" data-transition="fade-in">
+        <h2 class="slidetitle">Loading data</h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <p class="snippet-title">Load layer from URL</p>
+              <pre>
+                        <code class="lang-ts" data-line-numbers="1-3,6" data-trim>
+                            const layer = new FeatureLayer({
+                              url: &quot;https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_Major_Cities/FeatureServer&quot;,
+                            });
+
+                            const map = new Map({
+                              layers: [layer],
+                            });
+                        </code>
+                      </pre>
+            </div>
+            <div class="code-snippet fragment">
+              <p class="snippet-title">...or load it as a portal item</p>
+              <pre>
+                        <code class="lang-ts" data-line-numbers="1-5,8" data-trim>
+                            const layer = new FeatureLayer({
+                              portalItem: {
+                                id: &quot;85d0ca4ea1ca4b9abf0c51b9bd34de2e&quot;,
+                              },
+                            });
+
+                            const map = new Map({
+                              layers: [layer],
+                            });
+                        </code>
+                      </pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/data-layer.html" width="800px"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: TITLE -------->
+      <section data-background="./reveal.js/img/2023/dev/06.png">
+        <div class="title-lm">
+          <h2 style="text-align: left; margin-bottom: 10px">Layer Symbology</h2>
+          <p style="text-align: left; margin-top: 0; color: var(--r-section-subhead-color)">
+            Flat | Volumetric
+          </p>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: FLAT VS VOLUMETRIC  -------->
+      <section data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Flat vs. Volumetric</h2>
+
+        <iframe class="r-stretch" data-src="./src/samples/symbology-2d-3d/index.html"></iframe>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology : ADD RENDERER -------->
+      <section data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Applying Symbology </h2>
+
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <pre>
+                  <code class="lang-ts" data-line-numbers="1|3|4|5-6" data-trim>
+                    const layer = new FeatureLayer({
+                      url: &quot;https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_Major_Cities/FeatureServer&quot;,
+                      renderer: new SimpleRenderer({
+                        symbol: new PointSymbol3D({
+                          symbolLayers: [
+                            new IconSymbol3DLayer({
+                              size: &quot;10px&quot;,
+                              href: &quot;icon.png&quot;,
+                            }),
+                          ],
+                        }),
+                      }),
+                    });
+                  </code>
+                </pre>
+            </div>
+          </div>
+          <div class="right-column">
+            <img src="./src/images/symbology-applying.png" width="600px" />
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: OVERVIEW  -------->
+
+      <section data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">3D symbology for 2D features</h2>
+
+        <!--img src="./src/images/symbology-overview.png" width="1200px" /-->
+        <img src="./src/images/symbology-overview-vectorized.png" width="1200px" />
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: SYMBOLOGY POINT  -------->
+
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Points: PointSymbol3D</h2>
+        <div class="two-columns">
+          <div class="left-column r-stack">
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-object-to-icon">
+              <p class="snippet-title">Flat</p>
+              <pre>
+                  <code class="lang-ts" data-line-numbers="4-6" data-trim>
+                    const renderer2D = new SimpleRenderer({
+                      symbol: new PointSymbol3D({
+                        symbolLayers: [
+                          new IconSymbol3DLayer({
+                            resource: { primitive: &quot;circle&quot; },
+                            size: 3, // in pt
+                          }),
+                        ],
+                      }),
+                    });
+                </code>
+              </pre>
+            </div>
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-icon-to-object">
+              <p class="snippet-title">Volumetric</p>
+              <!--button class="play swap" id="icon-to-object"></button-->
+              <pre><code class="lang-ts" data-line-numbers="4-8" data-trim>
+                  const renderer3D = new SimpleRenderer({
+                    symbol: new PointSymbol3D({
+                      symbolLayers: [
+                        new ObjectSymbol3DLayer({
+                          resource: {
+                            primitive: &quot;cone&quot;,
+                          },
+                          width: 50000, // in meters
+                        }),
+                      ],
+                    }),
+                  });
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-point.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in a public sample:
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/visualization-multivariate-3d/"
+                target="_blank">Thematic multivariate visualization (3D)</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: SYMBOLOGY LINE  -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Lines: LineSymbol3D</h2>
+        <div class="two-columns">
+          <div class="left-column r-stack">
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-path-to-line">
+              <p class="snippet-title">Flat</p>
+              <pre><code class="lang-ts" data-line-numbers="3-9" data-trim>
+                  let symbol2D = new LineSymbol3D({
+                    symbolLayers: [
+                      new LineSymbol3DLayer({
+                        material: {
+                          color: &quot;blue&quot;,
+                        },
+                        size: 5, // in pt
+                        join: &quot;miter&quot;,
+                        cap: &quot;round&quot;,
+                      }),
+                    ],
+                  });
+                </code></pre>
+            </div>
+
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-line-to-path">
+              <p class="snippet-title">Volumetric</p>
+              <!--button class="play swap" id="line-to-path"></button-->
+              <pre><code class="lang-ts" data-line-numbers="3-13" data-trim>
+                  let symbol3D = new LineSymbol3D({
+                    symbolLayers: [
+                      new PathSymbol3DLayer({
+                        profile: &quot;quad&quot;,
+                        material: {
+                          color: &quot;blue&quot;,
+                        },
+                        width: 5, // in meters
+                        height: 30, // in meters
+                        join: &quot;miter&quot;,
+                        cap: &quot;round&quot;,
+                        anchor: &quot;bottom&quot;,
+                        profileRotation: &quot;all&quot;,
+                      }),
+                    ],
+                  });
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-line.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in a public sample:
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/visualization-path-3d/"
+                target="_blank">Path visualization in 3D</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: SYMBOLOGY POLYGON  -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Polygons: PolygonSymbol3D</h2>
+        <div class="two-columns">
+          <div class="left-column r-stack">
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-extrusion-to-polygon">
+              <p class="snippet-title">Flat</p>
+              <pre><code class="lang-ts" data-line-numbers="3" data-trim>
+                  const renderer2D = new SimpleRenderer({
+                    symbol: new PolygonSymbol3D({
+                      symbolLayers: [new FillSymbol3DLayer()],
+                    }),
+                  });
+                </code></pre>
+            </div>
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-polygon-to-extrusion">
+              <p class="snippet-title">Volumetric</p>
+              <!--button class="play swap" id="polygon-to-extrusion"></button-->
+              <pre><code class="lang-ts" data-line-numbers="3" data-trim>
+                  const renderer3D = new SimpleRenderer({
+                    symbol: new PolygonSymbol3D({
+                      symbolLayers: [new ExtrudeSymbol3DLayer()],
+                    }),
+                  });
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-polygon.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in a public sample:
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/visualization-vv-extrusion/"
+                target="_blank">Data-driven extrusion</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Extruding polygons: HTML -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Example: Extruding building footprints</h2>
+        <div class="two-columns">
+          <div class="left-column r-stack">
+            <div class="code-snippet fragment fade-in-then-out">
+              <pre><code class="lang-ts" data-line-numbers="1-3" data-trim>
+                  const symbol = new PolygonSymbol3D({
+                    symbolLayers: [
+                      new ExtrudeSymbol3DLayer({
+                        material: {
+                          color: color,
+                        },
+                        edges: {
+                          type: &quot;solid&quot;,
+                          color: &quot;#999&quot;,
+                          size: 0.5,
+                        },
+                      }),
+                    ],
+                  });
+                </code>
+              </pre>
+            </div>
+            <div class="code-snippet fragment fade-in-then-out">
+              <pre><code class="lang-ts" data-line-numbers="8-13" data-trim>
+                  const renderer = new UniqueValueRenderer({
+                    defaultSymbol: symbol,
+                    defaultLabel: &quot;Other&quot;,
+                    field: &quot;TYPE&quot;,
+                    uniqueValueInfos: [
+                      ...
+                    ],
+                    visualVariables: [
+                      {
+                        type: &quot;size&quot;,
+                        field: &quot;HEIGHT&quot;,
+                      },
+                    ],
+                  });
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div class="right-column">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-polygon-extrude.html"></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--------- Setting up a 3D application: 3D specific data -------->
+      <section data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Layer symbology: 3D-specific data types</h2>
+        <h3 class="slidetitle-sub">Scene Layer</h3>
+        <img src="./src/images/symbology-3d.png" width="1200px" />
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: 3D OBJECT SCENE LAYER  -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">3D Object Scene Layer: MeshSymbol3D</h2>
+
+        <h2></h2>
+        <div class="two-columns">
+          <div class="left-column r-stack">
+            <div class="code-snippet fragment fade-in-then-out">
+              <p class="snippet-title">Add textured layer</p>
+              <div class="code-snippet">
+                <pre><code class="lang-ts" data-trim>
+                  const layer = new SceneLayer({
+                    portalItem: {
+                      id: &quot;fdfa7e3168e74bf5b846fc701180930b&quot;,
+                    },
+                  });
+
+                  map.add(layer);
+                </code></pre>
+              </div>
+            </div>
+
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-sl-toggle-color">
+              <p class="snippet-title">Color by attributes instead</p>
+              <button class="play swap" id="sl-toggle-color"></button>
+              <div class="code-snippet">
+                <pre><code class="lang-ts smaller-snippet" data-line-numbers="2-10" data-trim>
+                  const thematicRenderer = new SimpleRenderer({
+                    symbol: new MeshSymbol3D({
+                      symbolLayers: [
+                        new FillSymbol3DLayer({
+                          material: {
+                            color: &quot;#ffffff&quot;,
+                            colorMixMode: &quot;replace&quot;,
+                          },
+                        }),
+                      ],
+                      visualVariables: [{
+                        type: &quot;color&quot;,
+                        field: &quot;solarAreaSuitableM2&quot;,
+                        stops: [
+                          {
+                            value: 1,
+                            color: &quot;#FFFCD4&quot;,
+                          },
+                          {
+                            value: 1000,
+                            color: [153, 83, 41],
+                          },
+                        ],
+                      }],
+                    }),
+                  });
+                  layer.renderer = thematicRenderer;
+                </code></pre>
+              </div>
+            </div>
+
+            <div class="code-snippet fragment fade-in-then-out">
+              <p class="snippet-title">Color by attributes instead</p>
+              <div class="code-snippet">
+                <pre><code class="lang-ts smaller-snippet" data-line-numbers="11-24" data-trim>
+                  const thematicRenderer = new SimpleRenderer({
+                    symbol: new MeshSymbol3D({
+                      symbolLayers: [
+                        new FillSymbol3DLayer({
+                          material: {
+                            color: &quot;#ffffff&quot;,
+                            colorMixMode: &quot;replace&quot;,
+                          }
+                        }),
+                      ],
+                      visualVariables: [{
+                        type: &quot;color&quot;,
+                        field: &quot;solarAreaSuitableM2&quot;,
+                        stops: [
+                          {
+                            value: 1,
+                            color: &quot;#FFFCD4&quot;,
+                          },
+                          {
+                            value: 1000,
+                            color: [153, 83, 41],
+                          },
+                        ],
+                      }],
+                    }),
+                  });
+                  layer.renderer = thematicRenderer;
+                </code></pre>
+              </div>
+            </div>
+
+            <div class="code-snippet fragment fade-in-then-out" data-fragment-id="fragment-sl-toggle-edges">
+              <p class="snippet-title">Add edges</p>
+              <button class="play swap" id="sl-toggle-edges"></button>
+              <pre><code class="lang-ts" data-trim>
+                  symbolLayer.edges = new SolidEdges3D({
+                    color: [0, 0, 0, 0.6],
+                    size: 1,
+                  });
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-3dosl.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in public samples:<br />
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/layers-scenelayer-color-mix-mode/"
+                target="_blank">Coloring options for textured buildings</a>
+              and
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/layers-scenelayer-edges/"
+                target="_blank">Add edges to a SceneLayer</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: BUILDING SCENE LAYER  -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Building Scene Layer</h2>
+
+        <h2></h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <p class="snippet-title">Add layer</p>
+              <pre><code class="lang-ts" data-trim>
+                  const buildingLayer = new BuildingSceneLayer({
+                    url: &quot;https://tiles.arcgis.com/tiles/V6ZHFr6zdgNZuVG0/arcgis/rest/services/BSL__4326__US_Redlands__EsriAdminBldg_PublicDemo/SceneServer&quot;,
+                  });
+                  map.add(layer);
+                </code></pre>
+            </div>
+
+            <div class="code-snippet fragment" data-fragment-id="fragment-bsl-color">
+              <p class="snippet-title">Color based on model name</p>
+              <button class="play swap" id="bsl-color"></button>
+              <pre><code class="lang-ts" data-line-numbers="2-9" data-trim>
+                  const columnsLayer = buildingLayer.allSublayers
+                    .find(l => l.modelName === &quot;StructuralColumns&quot;);
+
+                  columnsLayer.renderer = new SimpleRenderer({
+                    symbol: new MeshSymbol3D({
+                      symbolLayers: [
+                        new FillSymbol3DLayer({
+                          material: {
+                            color: &quot;red&quot;,
+                          },
+                        }),
+                      ],
+                    }),
+                  });
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-bsl.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in a public sample:
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/building-scene-layer-slice/"
+                target="_blank">BuildingSceneLayer with Slice widget</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: POINT CLOUD LAYER  -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Point Cloud Layer</h2>
+
+        <h2></h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <p class="snippet-title">Add layer</p>
+              <pre><code class="lang-ts" data-trim>
+                  const pcLayer = new PointCloudLayer({
+                    url: &quot;https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SONOMA_AREA1_LiDAR_RGB/SceneServer&quot;,
+                  });
+                  map.add(pcLayer);
+                </code></pre>
+            </div>
+            <div class="code-snippet fragment" data-fragment-id="fragment-pc-toggle-color">
+              <p class="snippet-title">Color by LAS classification</p>
+              <button class="play swap" id="pc-toggle-color"></button>
+              <pre><code class="lang-ts" data-trim style="height:360px;">
+                  pcLayer.renderer = new PointCloudUniqueValueRenderer({
+                    field: &quot;CLASS_CODE&quot;,
+                    colorUniqueValueInfos: [
+                      {
+                        values: [&quot;1&quot;],
+                        label: &quot;Unclassified&quot;,
+                        color: [178, 178, 178],
+                      },
+                      {
+                        values: [&quot;2&quot;],
+                        label: &quot;Ground&quot;,
+                        color: [168, 112, 0],
+                      },
+                      {
+                        values: [&quot;5&quot;],
+                        label: &quot;High Vegetation&quot;,
+                        color: [205, 245, 121],
+                      },
+                      {
+                        values: [&quot;6&quot;],
+                        label: &quot;Building&quot;,
+                        color: [229, 75, 65],
+                      },
+                      {
+                        values: [&quot;7&quot;],
+                        label: &quot;Low Point(noise)&quot;,
+                        color: [229, 0, 0],
+                      },
+                      {
+                        values: [&quot;9&quot;],
+                        label: &quot;Water&quot;,
+                        color: [0, 92, 230],
+                      },
+                    ],
+                    pointSizeAlgorithm: {
+                      type: &quot;fixed-size&quot;,
+                      useRealWorldSymbolSizes: false,
+                      size: 3,
+                    },
+                    pointsPerInch: 35,
+                  });
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-pc.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in public samples:<br />
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/layers-pointcloud/"
+                target="_blank">PointCloudLayer - toggle renderers</a>
+              and
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/layers-pointcloud-color-modulation/"
+                target="_blank">PointCloudLayer - intensity color modulation</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: INTEGRATED MESH LAYER  -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/03.png">
+        <h2 class="slidetitle">Integrated Mesh Layer</h2>
+
+        <h2></h2>
+        <div class="two-columns">
+          <div class="left-column">
+            <div class="code-snippet">
+              <p class="snippet-title">Add layer</p>
+              <pre><code class="lang-ts" data-trim>
+          const layer = new IntegratedMeshLayer({
+            url: &quot;https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Utrecht_Buildings_2021/SceneServer&quot;,
+          });
+          map.add(layer);
+        </code></pre>
+            </div>
+
+            <div class="code-snippet fragment" data-fragment-id="fragment-im-toggle-overlay">
+              <p class="snippet-title">Overlay with polygon layer</p>
+              <button class="play swap" id="im-toggle-overlay"></button>
+              <pre><code class="lang-ts" data-trim>
+          const polygonLayer = new FeatureLayer({
+            url: &quot;https://services2.arcgis.com/cFEFS0EWrhfDeVw9/arcgis/rest/services/FloodingDataUtrecht/FeatureServer/1&quot;,
+            elevationInfo: {
+              mode: &quot;on-the-ground&quot;,
+            },
+            opacity: 0.5,
+          });
+        </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-im.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in a public sample:
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/layers-integratedmeshlayer/"
+                target="_blank">IntegratedMeshLayer</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!--------- 1.3 Core concepts: Layer symbology: VOXEL LAYER  -------->
+      <section class="align-left" data-background="./reveal.js/img/2023/dev/04.png">
+        <h2 class="slidetitle">Voxel Layer</h2>
+        <div class="two-columns">
+          <div class="left-column r-stack">
+            <div class="code-snippet fragment fade-in-then-out">
+              <p class="snippet-title">Add layer</p>
+              <pre><code class="lang-ts" data-trim>
+                    const layer = new VoxelLayer({
+                      url: &quot;https://tiles.arcgis.com/tiles/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Soil_data_in_southeast_of_Netherlands_WSL1/SceneServer&quot;,
+                    });
+                    map.add(layer);
+                </code></pre>
+            </div>
+          </div>
+          <div class="right-column iframe-tm">
+            <div class="iframe-wrapper">
+              <iframe data-src="./src/samples/symbology-voxel.html"></iframe>
+            </div>
+            <p class="footnote">
+              See more in public sample:
+              <a href="https://developers.arcgis.com/javascript/latest/sample-code/layers-voxel-discrete-variable/"
+                target="_blank">VoxelLayer Discrete Variable</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature Highlights & Demos -->
+      <section data-background="./reveal.js/img/2023/dev/06.png">
+        <div class="title-lm">
+          <h2 style="text-align: left; margin-bottom: 10px;">Demos</h2>
+          <div style="text-align: left; margin-top: 25px;">
+            <li><a href="./src/samples/hiking-map/index.html" target="_blank">Hiking Map</a></li>
+            <li><a href="./src/samples/flight-data/index.html" target="_blank">Flight Data</a></li>
+            <li><a href="https://esri.github.io/building-viewer/" target="_blank">Turanga Library</a></li>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- FEEDBACK SLIDE: -->
+      <section data-markdown data-background="./reveal.js/img/2023/dev/07.png" data-background-size="contain"></section>
+
+      <!-- SOCIAL CONNECT SLIDE: -->
+      <section data-background="./reveal.js/img/2023/dev/06.png">
+        <h2 style="text-align: left">Connect With Us On Social</h2>
+        <p style="text-align: left; color: var(--r-section-subhead-color)">
+          And Join the Conversation Using #EsriDevSummit
+        </p>
+        <ul style="
+              text-align: left;
+              display: inline;
+              list-style-type: none;
+              line-height: 4rem;
+            ">
+          <li>
+            <img src="./reveal.js/img/2023/dev/twitter.png"
+              style="height: 50px; vertical-align: middle; margin-right: 15px" />
+            <a href="https://twitter.com/EsriDevs">twitter.com/EsriDevs</a>
+            #esridevsummit  #esridevsummit23
+          </li>
+          <li>
+            <img src="./reveal.js/img/2023/dev/twitter.png"
+              style="height: 50px; vertical-align: middle; margin-right: 15px" />
+            <a href="https://twitter.com/EsriDevEvents">twitter.com/EsriDevEvents</a>
+          </li>
+          <li>
+            <img src="./reveal.js/img/2023/dev/youtube.png"
+              style="height: 50px; vertical-align: middle; margin-right: 15px" />
+            <a href="https://youtube.com/@EsriDevs">youtube.com/@EsriDevs</a>
+          </li>
+          <li>
+            <img src="./reveal.js/img/2023/dev/video.png"
+              style="height: 50px; vertical-align: middle; margin-right: 15px" />
+            <a href="https://links.esri.com/DevVideos">links.esri.com/DevVideos</a>
+          </li>
+          <li>
+            <img src="./reveal.js/img/2023/dev/github.png"
+              style="height: 50px; vertical-align: middle; margin-right: 15px" />
+            <a href="https://github.com/Esri">github.com/Esri</a>
+          </li>
+          <li>
+            <img src="./reveal.js/img/2023/dev/github.png"
+              style="height: 50px; vertical-align: middle; margin-right: 15px" />
+            <a href="https://github.com/EsriDevEvents">github.com/EsriDevEvents</a>
+          </li>
+          <li>
+            <img src="./reveal.js/img/2023/dev/community.png"
+              style="height: 50px; vertical-align: middle; margin-right: 15px" />
+            <a href="https://links.esri.com/EsriDevCommunity">links.esri.com/EsriDevCommunity</a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ESRI LOGO SLIDE: -->
+      <section data-markdown data-background="./reveal.js/img/2023/dev/08.png" data-background-size="contain"></section>
+    </div>
+  </div>
+
+  <script src="./reveal.js/dist/reveal.js"></script>
+  <script src="./reveal.js/plugin/notes/notes.js"></script>
+  <script src="./reveal.js/plugin/markdown/markdown.js"></script>
+  <script src="./reveal.js/plugin/highlight/highlight.js"></script>
+  <script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+      hash: true,
+      width: 1366,
+      height: 768,
+      margin: 0.05,
+      controls: false,
+
+      // Learn about plugins: https://revealjs.com/plugins/
+      plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "e") {
+        document.body.classList.toggle("extend-iframe");
+      }
+    });
+  </script>
+</body>
+
+</html>

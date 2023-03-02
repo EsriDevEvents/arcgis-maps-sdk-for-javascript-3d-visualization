@@ -1,0 +1,189 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>
+      Based on: PointCloudLayer - intensity color modulation | Sample | ArcGIS API for JavaScript
+      4.26
+    </title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.26/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/SceneView",
+        "esri/layers/PointCloudLayer",
+        "esri/renderers/PointCloudRGBRenderer",
+        "esri/renderers/PointCloudUniqueValueRenderer",
+        "esri/widgets/Fullscreen",
+      ], (
+        Map,
+        SceneView,
+        PointCloudLayer,
+        PointCloudRGBRenderer,
+        PointCloudUniqueValueRenderer,
+        Fullscreen
+      ) => {
+        let biggerPoints = false;
+        let texture = true;
+
+        const pcLayer = new PointCloudLayer({
+          url: "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SONOMA_AREA1_LiDAR_RGB/SceneServer"
+        });
+
+        // Create Map and View
+        const map = new Map({
+          basemap: "gray-vector",
+          ground: "world-elevation",
+          layers: [pcLayer],
+        });
+
+        const view = new SceneView({
+          container: "viewDiv",
+          map: map,
+          camera: {
+            position: {
+              spatialReference: { wkid: 102100 },
+              x: -13631997.625431431,
+              y: 4620903.18380433,
+              z: 145.98058252129704
+            },
+            heading: 68.77581553018159,
+            tilt: 69.93420226919814
+          }
+        });
+
+        function updateRenderer() {
+          if (texture) {
+            pcLayer.renderer = new PointCloudRGBRenderer({
+              field: "RGB",
+              pointSizeAlgorithm: {
+                type: "splat",
+                scaleFactor: 2
+              },
+              pointsPerInch: 35,
+            });
+          } else {
+            pcLayer.renderer = new PointCloudUniqueValueRenderer({
+              field: "CLASS_CODE",
+              colorUniqueValueInfos: [
+                {
+                  values: ["1"],
+                  label: "Unclassified",
+                  color: [178, 178, 178]
+                },
+                {
+                  values: ["2"],
+                  label: "Ground",
+                  color: [168, 112, 0]
+                },
+                {
+                  values: ["5"],
+                  label: "High Vegetation",
+                  color: [205, 245, 121]
+                },
+                {
+                  values: ["6"],
+                  label: "Building",
+                  color: [229, 75, 65]
+                },
+                {
+                  values: ["7"],
+                  label: "Low Point(noise)",
+                  color: [229, 0, 0]
+                },
+                {
+                  values: ["9"],
+                  label: "Water",
+                  color: [0, 92, 230]
+                }
+              ],
+              pointSizeAlgorithm: {
+                type: "fixed-size",
+                useRealWorldSymbolSizes: false,
+                size: 3
+              },
+              pointsPerInch: 35
+            });
+          }
+        }
+
+        const fullscreen = new Fullscreen({
+          view: view,
+        });
+        view.ui.add(fullscreen, "bottom-left");
+
+        // - - - - - - - - - - - - - - - -
+        // Reveal.js slide interaction
+        // - - - - - - - - - - - - - - - -
+
+        const doc = parent.document;
+        doc.getElementById("pc-toggle-color").onclick = () => {
+          toggleTexture(!texture);
+        };
+
+        function toggleSize(input) {
+          biggerPoints = input;
+          updateRenderer();
+        }
+        function toggleTexture(input) {
+          texture = input;
+          updateRenderer();
+        }
+
+        toggleTexture(true);
+        onFragment("fragment-pc-toggle-color", () => {
+          toggleTexture(false);
+        });
+
+        // - - - - - - - - - - - - - - - -
+        // Reveal.js helpers
+        // - - - - - - - - - - - - - - - -
+
+        function onFragment(elementId, doSomething) {
+          const run = () => {
+            const currentId = getCurrentFragmentId();
+            //console.log(elementId + " " + currentId);
+            if (currentId === elementId) {
+              doSomething();
+            }
+          };
+
+          parent.Reveal.addEventListener("fragmenthidden", run);
+          parent.Reveal.addEventListener("fragmentshown", run);
+          run();
+        }
+
+        function getCurrentSlide() {
+          //console.log("getCurrentSlide");
+          return parent.Reveal.getCurrentSlide();
+        }
+
+        function getCurrentFragment() {
+          //console.log("getCurrentFragment");
+          return getCurrentSlide().querySelector(".current-fragment") ?? null;
+        }
+        function getCurrentFragmentId() {
+          //console.log("getCurrentFragmentId");
+          return getCurrentFragment()?.getAttribute("data-fragment-id") ?? null;
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "ds2023-3d-visualization",
+  "version": "0.0.1",
+  "description": "3D Visualization presentation and accompanying code samples that were shown at the Esri Developer Summit 2023",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "types": "tsc --noEmit"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@arcgis/core": "^4.26.0"
+  },
+  "devDependencies": {
+    "@types/reveal": "4.2.0",
+    "typescript": "4.9.5",
+    "vite": "^4.1.1",
+    "vite-plugin-static-copy": "^0.13.0"
+  }
+}
